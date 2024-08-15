@@ -77,7 +77,7 @@ python numshots/get_train_val_split.py --pt_path FEATURES_DIRECTORY --dataset_na
 ## Model Training
 To facilitate the replication of our method, we wrote the `.sh` files for the three data sets to make it easy to run the program with one click:
 ```bash
-bash scripts/train_my_brca.sh 0
+bash scripts/mscpt/train_my_brca.sh 0
 ```
 Note that you need to enter your SELECTED_PATCHES_DIRECTORY and FEATURES_DIRECTORY in the corresponding `.sh` file.
 ## Funding
