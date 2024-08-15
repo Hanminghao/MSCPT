@@ -48,7 +48,11 @@ FEATURES_DIRECTORY/
         └── ...
 ```
 ## Patch Selection
-Since the computational cost of visual prompt tuning for all patches is unacceptable, we use the zero-shot capability of VLM to extract some patches as inputs for visual prompt tuning at 5x magnification. Run `select_5X_pic.py` to select patches: 
+Since the computational cost of visual prompt tuning for all patches is unacceptable, we use the zero-shot capability of VLM to extract some patches as inputs for visual prompt tuning at 5x magnification. We first build prompts for patch selection:
+```bash
+python generate_select_prompt.py --dataset_name DATASET_NAME
+```
+Then run `select_5X_pic.py` to select patches: 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python select_5X_pic.py --k 30 --h5_source H5_FILE_DIRECTORY/patches --wsi_source WSI_FILE_DIRECTORY --pt_path FEATURES_DIRECTORY --save_dir SELECTED_PATCHES_DIRECTORY --model_name MODEL_NAME --dataset_name DATASET_NAME
 ```

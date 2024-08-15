@@ -5,36 +5,26 @@ import os
 
 parser = argparse.ArgumentParser(description='generate a set of prompts for zeroshot eval')
 parser.add_argument('--iters', type=int, default=50, help='num sampling iters')
-parser.add_argument('--dataset', type=str, choices=['rcc', 'brca', 'nsclc', 'coadread', 'camelyon16'], default='camelyon16', help='name of dataset')
+parser.add_argument('--dataset_name', type=str, choices=['rcc', 'brca', 'nsclc'], default='camelyon16', help='name of dataset')
 parser.add_argument('--overwrite', default=False, action='store_true', help='overwrite prompt file if already exists')
 args = parser.parse_args()
 
 def main(args):
-    if args.dataset == 'rcc':
+    if args.dataset_name == 'rcc':
         classnames_pool = {
             'CHRCC': ['chromophobe renal cell carcinoma', 'renal cell carcinoma, chromophobe type', 'renal cell carcinoma of the chromophobe type', 'chromophobe RCC'],  
             'CCRCC': ['clear cell renal cell carcinoma', 'renal cell carcinoma, clear cell type', 'renal cell carcinoma of the clear cell type', 'clear cell RCC'],
             'PRCC': ['papillary renal cell carcinoma', 'renal cell carcinoma, papillary type', 'renal cell carcinoma of the papillary type', 'papillary RCC']
         }
-    elif args.dataset == 'brca':
+    elif args.dataset_name == 'brca':
         classnames_pool = {
             'IDC': ['invasive ductal carcinoma', 'carcinoma of the breast, ductal pattern'],
             'ILC': ['invasive lobular carcinoma', 'carcinoma of the breast, lobular pattern']
         }
-    elif args.dataset == 'nsclc':
+    elif args.dataset_name == 'nsclc':
         classnames_pool = {
             'LUAD': ['adenocarcinoma', 'lung adenocarcinoma', 'adenocarcinoma of the lung', 'pulmonary adenocarcinoma', 'adenocarcinoma, lepidic pattern', 'adenocarcinoma, solid pattern', 'adenocarcinoma, micropapillary pattern', 'adenocarcinoma, acinar pattern', 'adenocarcinoma, papillary pattern'],
             'LUSC': ['squamous cell carcinoma', 'lung squamous cell carcinoma', 'squamous cell carcinoma of the lung', 'pulmonary squamous cell carcinoma']
-        }
-    elif args.dataset == 'coadread':
-        classnames_pool = {
-            'READ': ['rectal adenocarcinoma', 'adenocarcinoma of the rectum', 'rectum adenocarcinoma', 'rectal cancer', 'cancer of the rectum', 'rectal carcinoma'],
-            'COAD': ['colon adenocarcinoma', 'adenocarcinoma of the colon', 'colorectal cancer', 'colon cancer', 'cancer of the colon', 'colon carcinoma']
-        }
-    elif args.dataset == 'camelyon16':
-        classnames_pool = {
-            'Normal': ['normal tissue', 'benign tissue', 'healthy tissue'],
-            'Tumor': ['tumor', 'cancer', 'malignant tissue', 'neoplasm', 'carcinoma', 'cancerous tissue', 'metastasis']
         }
     else:
         raise NotImplementedError
@@ -63,7 +53,7 @@ def main(args):
     sizerange = range(1, len(templates_pool)+1)
 
 
-    path_to_prompts = f'./train_data/gpt/description/{args.dataset}_select_pic.json' 
+    path_to_prompts = f'./train_data/gpt/description/{args.dataset_name}_select_pic.json' 
     if not args.overwrite and os.path.isfile(path_to_prompts):
         return
 
