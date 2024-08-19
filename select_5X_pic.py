@@ -18,7 +18,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 def load_pretrained_tokenizer(model_name):
     if model_name == 'plip':
         model_name = 'vinid/plip'
-        # tokenizer = AutoTokenizer.from_pretrained(model_name, fast=True)
         tokenizer = AutoTokenizer.from_pretrained("path_to_plip_weight", use_fast=True)
     elif model_name == 'clip':
         model_name = 'openai/clip-vit-base-patch16'
@@ -34,18 +33,17 @@ def load_ctranspath_clip(model_name, img_size = 224, return_trsforms = True):
         from transformers import CLIPModel
         model = CLIPModel.from_pretrained("path_to_plip_weight")
         if return_trsforms:
-            trsforms = get_transforms_ctranspath(img_size = img_size)
+            trsforms = get_transforms(img_size = img_size)
             return model, trsforms
     elif model_name == 'clip':
         from transformers import CLIPModel
         model = CLIPModel.from_pretrained('path_to_clip_weight')
         if return_trsforms:
-            trsforms = get_transforms_ctranspath(img_size = img_size)
+            trsforms = get_transforms(img_size = img_size)
             return model, trsforms
     return model
 
-# ctranspath transformation
-def get_transforms_ctranspath(img_size=224, 
+def get_transforms(img_size=224, 
                             mean = (0.485, 0.456, 0.406), 
                             std = (0.229, 0.224, 0.225)):
     trnsfrms = transforms.Compose(
@@ -57,12 +55,10 @@ def get_transforms_ctranspath(img_size=224,
                 )
     return trnsfrms
 
-
 def file_exists(df, root, ext = '.h5'):
     file_id = df['slide_id']
     df['has_h5'] = os.path.isfile(os.path.join(root, file_id + ext))
     return df
-
 
 def read_assets_from_h5(h5_path):
     assets = {}
@@ -92,15 +88,8 @@ def compute_patch_args(df, wsi_source, wsi_ext = '.svs', target_mag = 20, patch_
 
 class Whole_Slide_Bag_FP(Dataset):
     def __init__(self, pt_features):
-        """
-        Args:
-            coords (string): coordinates to extract patches from w.r.t. level 0.
-            custom_transforms (callable, optional): Optional transform to be applied on a sample
-            target_patch_size (int): Custom defined image size before embedding
-        """
         self.coords = coords
         self.pt_features = pt_features
-
 
     def __len__(self):
         return len(self.coords)
@@ -132,8 +121,6 @@ def extract_features(df, model_name, model, wsi_ext = '.svs', pt_path='', device
         features = F.normalize(features, dim=-1) 
     return features, return_coords, wsi, patch_level, patch_size
             
-
-
 import argparse
 parser = argparse.ArgumentParser(description='Extract features using patch coordinates')
 parser.add_argument('--csv_path', type=str, default='./tcga_rcc.csv', help='path to slide csv')
@@ -150,7 +137,6 @@ parser.add_argument('--split', type=str, default='KIRC')
 parser.add_argument('--dataset_name', type=str, default='RCC', choices=['Lung', 'RCC', 'BRCA'])
 args = parser.parse_args()
 
-
 def tokenize(tokenizer, texts):
     tokens = tokenizer.batch_encode_plus(texts, 
                                         max_length = 64,
@@ -160,7 +146,6 @@ def tokenize(tokenizer, texts):
                                         padding = 'max_length',
                                         return_attention_mask=True)
     return tokens['input_ids'], tokens['attention_mask']
-
 
 label_dicts = {
     'RCC': {'CHRCC': 0, 'CCRCC': 1, 'PRCC': 2},
@@ -172,7 +157,6 @@ project_dic = {
     'RCC': ['KIRC', 'KIRP', 'KICH'],
     'Lung': ['LUAD', 'LUSC'],
     'BRCA': ['BRCA'],
-
 }
 
 if __name__ == '__main__':
@@ -246,7 +230,6 @@ if __name__ == '__main__':
         df = df.apply(lambda x: compute_patch_args(x, wsi_source, wsi_ext=args.wsi_ext, target_mag = 5, patch_size = 256), axis=1)
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
-
 
         for idx in tqdm(range(len(df))):
             slide_id = df.iloc[idx]['slide_id']

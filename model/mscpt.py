@@ -92,7 +92,6 @@ class MYPromptLearner(nn.Module):
         prompt_prefix = " ".join(["X"] * (self.n_tpro+self.n_high))
 
         for name in self.classnames:
-            # We leverage all structures from descriptions as a part of input respectively during evaluation.
             for id in range(len(desc[name]['big_mag'])):
                 p = prompt_prefix + ' ' + desc[name]['big_mag'][id]
                 prompts.append(p)
@@ -114,7 +113,6 @@ class MYPromptLearner(nn.Module):
 
         causal_attention_mask = _create_4d_causal_attention_mask(tokenized_prompts.size(), embedding.dtype, device=embedding.device)
         if attention_mask is not None:
-            # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
             attention_mask = _prepare_4d_attention_mask(attention_mask, embedding.dtype)
         
         
@@ -123,7 +121,7 @@ class MYPromptLearner(nn.Module):
         suffix = embedding[:, 1+self.n_tpro+self.n_high:]
         
         # the input of the prompted text encoder
-        p_ori = torch.cat([prefix, p_input, suffix], dim=1) #prefix， global prompts 以及 low-level promtps [num_class*num_desc, max_token_length, dim]
+        p_ori = torch.cat([prefix, p_input, suffix], dim=1) #prefix， global prompts and low-level promtps [num_class*num_desc, max_token_length, dim]
 
         # generate corresponding high-level prompt (p_ins)
         p_ins = []
@@ -144,14 +142,10 @@ class VisionPromptLearner(nn.Module):
     def __init__(self, clip_model, n_vpro):
         super().__init__()
         self.n_vpro = n_vpro
-        
-
         self.pro_dim = clip_model.vision_model.post_layernorm.weight.shape[0]
         self.dtype = clip_model.vision_model.post_layernorm.weight.dtype
         self.layers = len(clip_model.vision_model.encoder.layers)
         self.embeddings = clip_model.vision_model.embeddings
-
-
         self.p_visual = nn.ParameterList([nn.Parameter(torch.empty(self.n_vpro, self.pro_dim).type(self.dtype))
                                           for _ in range(self.layers-1)])
         for p in self.p_visual:
@@ -160,7 +154,6 @@ class VisionPromptLearner(nn.Module):
         # global prompt for the first layer of image encoder
         self.p_input = nn.Parameter(torch.empty(self.n_vpro, self.pro_dim))
         nn.init.normal_(self.p_input, std=0.02)
-
 
     def forward(self, x):
         x = x.type(self.dtype)
@@ -181,8 +174,6 @@ class VisionEncoder(nn.Module):
         self.proj = clip_model.visual_projection
         self.dtype = clip_model.vision_model.post_layernorm.weight.dtype
         self.layers = clip_model.vision_model.encoder.layers
-
-        
 
     def forward(self, x, p_visual):
         hidden_states = self.pre_layrnorm(x).type(self.dtype)
@@ -221,7 +212,7 @@ class TextEncoder(nn.Module):
                 prefix = x[:, :1]
                 suffix = x[: ,1+self.n_tpro+self.n_high:]
                 
-                # global-level prompt
+                # global prompt
                 ctx_g = p_uni[layer_idx - 1].unsqueeze(0).expand(prefix.shape[0], self.n_tpro, -1)
                 
                 # high-level prompt
@@ -259,7 +250,6 @@ class TextEncoderZS(nn.Module):
         hidden_states = self.embeddings(input_ids=input_ids)
         causal_attention_mask = _create_4d_causal_attention_mask(input_shape, hidden_states.dtype, device=hidden_states.device)
         if attention_mask is not None:
-            # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
             attention_mask = _prepare_4d_attention_mask(attention_mask, hidden_states.dtype)
         feats = []
         for _, layer in enumerate(self.encoder):
@@ -279,7 +269,7 @@ class TextEncoderZS(nn.Module):
         out_put = self.text_projection(pooled_output)
         txt_feats = torch.stack(feats)
 
-        return out_put, txt_feats   #out_put应该是[N,512]
+        return out_put, txt_feats
 
 class CustomCLIP(nn.Module):
     def __init__(self, classnames, clip_model, description_dir, dataset_name,
@@ -351,25 +341,25 @@ class CustomCLIP(nn.Module):
         image_features_zs = small_embeddings
         image_features_zs = image_features_zs.reshape(-1, image_features_zs.shape[-1])
 
+        # textual prompt tuning
         p_ori, p_ins, p_uni, causal_attention_mask, attention_mask = self.prompt_learner(self.text_features_ft, self.text_prompts)
         tokenized_prompts = self.prompt_learner.tokenized_prompts
         text_features = self.text_encoder(p_ori, p_ins, p_uni, tokenized_prompts, attention_mask, causal_attention_mask)
         text_features = F.normalize(text_features, dim=1)
         
-        # Since we use multiple structures for producing representations of one category, 
-        # we should take their mean value as the final representation.
+        # visual prompt tuning
         x, p_visual = self.vision_prompt_learner(big_image)
         image_features = self.image_encoder(x, p_visual)
         image_features = F.normalize(image_features, dim=1)
 
-        # asymmetric loss   
+        # calculate similarity score betweent patch visual embeddings and description embeddings 
         sim_big = image_features @ text_features_zs.t()
         sim_big_ = sim_big
-
 
         sim_small = image_features_zs @ text_features.t()
         sim_small_ = sim_small
 
+        # Image-text Similarity-based Graph Prompt Tuning
         sim_big_ = sim_big_.reshape(sim_big_.shape[0], self.n_class, -1).permute(1,0,2)
         A_big = torch.bmm(sim_big_, sim_big_.transpose(1,2))
         A_big = torch.max(A_big, dim=0)[0]
@@ -388,6 +378,7 @@ class CustomCLIP(nn.Module):
         edge_index_small = torch.tensor([[i, j] for i in range(num_nodes_small) for j in range(i+1, num_nodes_small)], dtype=torch.long).t().contiguous()
         x_small = self.gcn_prompt_learner_small(x_small, edge_index_small.cuda())
 
+        # Non-Parametric Cross-Guided Pooling
         logits_i = x_big @ text_features_zs.t()
         return_sim_big = logits_i.reshape(logits_i.shape[0], self.n_class, -1).cpu().detach().numpy()
         logits_i = logits_i.reshape(-1, self.n_class)
@@ -407,7 +398,6 @@ class CustomCLIP(nn.Module):
         logits_t_cross = x_small @ text_features_t.t()
         logits_t_cross = logit_scale * torch.topk(logits_t_cross, 100, dim=0)[0].mean(0)
         logits_t = logits_t + logits_t_cross
-        
 
         logits = (logits_i + logits_t)/2
 
@@ -452,7 +442,6 @@ class Mscpt(nn.Module):
 
 
     def forward(self, data, train=True):
-    # def forward(self, data):
         big_img = data[0]
         small_embeddings = data[1]
         if train:

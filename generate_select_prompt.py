@@ -48,10 +48,8 @@ def main(args):
     'CLASSNAME is present.'
     ]
 
-
     iters = args.iters
     sizerange = range(1, len(templates_pool)+1)
-
 
     path_to_prompts = f'./train_data/gpt/description/{args.dataset_name}_select_pic.json' 
     if not args.overwrite and os.path.isfile(path_to_prompts):

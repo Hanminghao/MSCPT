@@ -139,7 +139,6 @@ class MInterface(pl.LightningModule):
             self.best_val_pre = precision
             self.best_val_recall = recall
             save_result = {
-                # 'epoch':epoch,
                 'acc': acc,
                 'auc': auc,
                 'f1': f1,
