@@ -10,7 +10,7 @@ MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-fo
 
 <img src="overall.png" scaledwidth="100%" align="center" />
 
-## Installation:
+## Installation
 You can follow the [CLAM installation guide](https://github.com/mahmoodlab/CLAM/blob/master/docs/INSTALLATION.md) to install the dependency pack.
 
 ## WSI Segmentation and Patching 
