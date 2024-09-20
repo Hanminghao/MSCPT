@@ -1,6 +1,6 @@
 MSCPT 
 ===========
-MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-focused Prompt Tuning.
+[MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-focused Prompt Tuning.](https://arxiv.org/abs/2408.11505)
 
 
 <!-- [ArXiv](https://arxiv.org/abs/2004.09666) | [Journal Link](https://www.nature.com/articles/s41551-020-00682-w) | [Interactive Demo](http://clam.mahmoodlab.org) | [Cite](#reference)  -->
