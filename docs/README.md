@@ -98,7 +98,7 @@ Note that you need to enter your SELECTED_PATCHES_DIRECTORY and FEATURES_DIRECTO
 This project was funded by the National Natural Science Foundation of China 82090052.
 If you find our work useful in your research or if you use parts of this code please cite our paper:
 ```bibtext
-@ARTICLE{10979677,
+article{han2024mscpt,
   author={Han, Minghao and Qu, Linhao and Yang, Dingkang and Zhang, Xukun and Wang, Xiaoying and Zhang, Lihua},
   journal={IEEE Transactions on Medical Imaging}, 
   title={MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-focused Prompt Tuning}, 
