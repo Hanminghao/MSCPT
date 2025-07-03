@@ -104,8 +104,4 @@ If you find our work useful in your research or if you use parts of this code pl
   journal={arXiv preprint arXiv:2408.11505},
   year={2024}
 }
-<<<<<<< HEAD
 ```
-=======
-```
->>>>>>> 81482b9a1aea949fe200ba9f4bcb422725c75180
