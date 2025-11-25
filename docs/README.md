@@ -2,7 +2,7 @@ MSCPT （IEEE TMI 2025）
 ===========
 MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-focused Prompt Tuning.
 
-[Arxiv](https://arxiv.org/abs/2408.11505)
+[Arxiv](https://arxiv.org/abs/2408.11505) | [IEEE Paper](https://ieeexplore.ieee.org/document/10979677)
 <!-- [ArXiv](https://arxiv.org/abs/2004.09666) | [Journal Link](https://www.nature.com/articles/s41551-020-00682-w) | [Interactive Demo](http://clam.mahmoodlab.org) | [Cite](#reference)  -->
 
 <img src="logo.png" width="400px" align="right" />
