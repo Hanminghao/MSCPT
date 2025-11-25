@@ -109,12 +109,4 @@ article{han2024mscpt,
   keywords={Tuning;Pathology;Visualization;Training;Tumors;Cancer;Transformers;Large language models;Image classification;Training data;whole slide image classification;prompt tuning;few-shot learning;multimodal},
   doi={10.1109/TMI.2025.3564976}}
 ```
-```bibtext
-@article{han2024mscpt,
-  title={MSCPT: Few-shot Whole Slide Image Classification with Multi-scale and Context-focused Prompt Tuning},
-  author={Han, Minghao and Qu, Linhao and Yang, Dingkang and Zhang, Xukun and Wang, Xiaoying and Zhang, Lihua},
-  journal={arXiv preprint arXiv:2408.11505},
-  year={2024}
-}
-```
 
